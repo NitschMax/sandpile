@@ -104,7 +104,7 @@ class grid:
     ##### A running routine, if the time_step algorithm returns 0, then the lattice has no possible spillings any more
     def run(self, N):
         for k in range(N):
-            wert    = self.time_step_ind()
+            wert    = self.time_step_hex()
 
             if wert == 0:
                 return
@@ -122,7 +122,25 @@ class grid:
         neighboors  = np.mod(candidates.reshape((candidates.shape[0], 1, candidates.shape[1]) ) + steps, self.l )
         neighboors  = np.transpose(neighboors, (1, 2, 0))
         for el in neighboors:
-            self.o[el[0], el[1]]    += fillings/4                       # This is necessary to get overspillings in the same cell right
+            self.o[el[0], el[1]]    += fillings/len(steps)                       # This is necessary to get overspillings in the same cell right
+        self.var.append(np.var(self.o) )
+        self.time   += 1
+        return 1
+
+    ##### time step with hexagon symmetry
+    def time_step_hex(self):
+        candidates  = np.array(np.where(self.o > 1) )
+        if candidates.size == 0:
+            return 0                                                    # Break the routine of there is no spilling possible
+
+        fillings    = self.o[candidates[0], candidates[1]]
+        self.o[candidates[0], candidates[1]]  = 0
+        steps       = np.array([[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1] ] )
+        candidates  = np.transpose(candidates)
+        neighboors  = np.mod(candidates.reshape((candidates.shape[0], 1, candidates.shape[1]) ) + steps, self.l )
+        neighboors  = np.transpose(neighboors, (1, 2, 0))
+        for el in neighboors:
+            self.o[el[0], el[1]]    += fillings/len(steps)                      # This is necessary to get overspillings in the same cell right
         self.var.append(np.var(self.o) )
         self.time   += 1
         return 1

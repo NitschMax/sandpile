@@ -4,8 +4,8 @@ import time
 
 def main():
     N       = 100
-    n       = 100
-    mu      = 1.1
+    n       = 500
+    mu      = 0.4
     lattice = grid(mu, N, N)
 
     lattice.fill_random()
