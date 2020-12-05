@@ -77,9 +77,11 @@ class grid:
     
     ##### Plot the lattice and its variancies
     def plot(self):
-        fig, (ax1, ax2)     = plt.subplots(1,2)
+        fig, (ax1,ax2,ax3)  = plt.subplots(1,3)
         c                   = ax1.pcolor(self.o, cmap='RdBu', vmin=0)
         ax2.plot(self.var)
+        balken              = np.arange(0, 1.0001, .1)
+        ax3.hist(self.o, bins=balken)
         fig.colorbar(c, ax=ax1)
         fig.tight_layout()
         plt.show()
