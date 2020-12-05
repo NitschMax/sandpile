@@ -5,8 +5,8 @@ import time
 def main():
     N       = 100
     n       = 100
-    crit    = .5
-    lattice = grid(crit, N, N)
+    mu      = 1.1
+    lattice = grid(mu, N, N)
 
     lattice.fill_random()
     lattice.run(n)

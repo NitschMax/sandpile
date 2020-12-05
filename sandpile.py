@@ -14,18 +14,19 @@ class grid:
     ##### Several interesting starting configurations
     def fill_random(self):
         self.o      = np.random.rand(self.h, self.l)
-        self.mu     = self.o.mean()
+        self.o      *= self.mu/self.o.mean()
         self.time   = 0
         self.var    = [np.var(self.o)]
 
     def fill_checkerboard(self):
         self.o      = np.indices((self.h, self.l) ).sum(axis=0) % 2 
-        self.mu     = self.o.mean()
+        self.o      *= self.mu/self.o.mean()
         self.time   = 0
         self.var    = [np.var(self.o)]
 
     def fill_random_checker(self):
         self.o      = (np.indices((self.h, self.l) ).sum(axis=0) % 2)*(1-.1*np.random.rand(self.h, self.l) )
+        self.o      *= self.mu/self.o.mean()
         self.mu     = self.o.mean()
         self.time   = 0
         self.var    = [np.var(self.o)]
@@ -48,7 +49,7 @@ class grid:
             os.mkdir(directory)
         os.chdir(directory)
         
-        return str('x{:0.4f}/').format(self.x)
+        return str('mu{:0.4f}/').format(self.mu)
 
     ##### Load an already calculated lattice with its lattest occupation and variancies
     def load(self):
@@ -110,7 +111,7 @@ class grid:
 
     ##### Last version of the time_step algorithm, purely array indexing, by way the fastest version
     def time_step_ind(self):
-        candidates  = np.array(np.where(self.o > self.x) )
+        candidates  = np.array(np.where(self.o > 1) )
         if candidates.size == 0:
             return 0                                                    # Break the routine of there is no spilling possible
 
@@ -128,7 +129,7 @@ class grid:
 
     ##### First version of the time step algorithm, mixture of for loop and matrix multiplication
     def time_step(self):
-        overspill   = np.transpose(np.where(self.o > self.x) )
+        overspill   = np.transpose(np.where(self.o > 1) )
         update      = np.identity(self.h*self.l)
         vector      = self.o.flatten()
 
@@ -150,7 +151,7 @@ class grid:
 
     ##### Second version of the time step algorithm, indexing with a matrix multiplication
     def time_step_mat(self):
-        candidates  = np.transpose(np.where(self.o > self.x) )
+        candidates  = np.transpose(np.where(self.o > 1) )
         if candidates.size == 0:
             return 0
         vector      = self.o.flatten()
@@ -172,12 +173,11 @@ class grid:
         self.time   += 1
         return 1
 
-    def __init__(self, crittical_value, heigth, length):
-        self.x      = crittical_value               #critcal value
+    def __init__(self, mu, heigth, length):
         self.h      = heigth                        #heigth of the grid
         self.l      = length                        #length of the grid
         self.a      = self.h*self.l                 #area of the grid
-        self.mu     = 0                             #average filling of the grid
+        self.mu     = mu                            #average filling of the grid
         self.time   = 0                             #current time step of the grid
         self.var    = []                            #variance of the grid
         self.o      = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
