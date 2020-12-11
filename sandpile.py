@@ -4,6 +4,7 @@ import os
 
 import scipy.sparse as sparse
 import data_dir
+from matplotlib.animation import FuncAnimation
 
 class grid:
     ##### Let the lattice introduce itself
@@ -13,7 +14,7 @@ class grid:
 
     ##### Several interesting starting configurations
     def fill_random(self):
-        self.o      = np.random.rand(self.h, self.l)
+        self.o      = 4*np.random.rand(self.h, self.l)
         self.o      *= self.mu/self.o.mean()
         self.time   = 0
         self.var    = [np.var(self.o)]
@@ -27,7 +28,6 @@ class grid:
     def fill_random_checker(self):
         self.o      = (np.indices((self.h, self.l) ).sum(axis=0) % 2)*(1-.1*np.random.rand(self.h, self.l) )
         self.o      *= self.mu/self.o.mean()
-        self.mu     = self.o.mean()
         self.time   = 0
         self.var    = [np.var(self.o)]
 
@@ -81,21 +81,41 @@ class grid:
         fig, (ax1,ax2,ax3)  = plt.subplots(1,3)
         c                   = ax1.pcolor(self.o, cmap='RdBu', vmin=0)
         ax2.plot(self.var)
-        balken              = np.arange(0, 1.0001, .1)
-        ax3.hist(self.o, bins=balken)
+        ax3.hist(self.o.flatten(), bins=20)
         fig.colorbar(c, ax=ax1)
         fig.tight_layout()
         plt.show()
+
+    ##### Routine to build an animation out of the simulation of a grid
+    def animation(self, n):
+        fig     = plt.figure(figsize=(6, 4))
+        ax      = fig.add_subplot(111)
+        x       = list(range(self.l+1 ) )
+        y       = x
+        f_d     = ax.pcolormesh(x, y, self.o, cmap='RdBu', vmin=0)
+
+        def animate(i):
+            self.time_step_ind()
+            f_d.set_array(self.o.flatten() )
+
+            #### furhter possibilities which are not yet included
+            #f_d.set_color(colors(i))
+            #temp.set_text(str(int(T[i])) + ' K')
+            #temp.set_color(colors(i))
+
+        ani = FuncAnimation(fig=fig, func=animate, frames=n, interval=100, repeat=True)
+        ani.save('animation.mp4')
+        #plt.show()
 
     ##### A routine to check for a simple test of one time_step
     def test_run(self):
         middle      = int(self.l/2)
         self.o      = np.zeros((self.h, self.l) )
 
-        self.modify(0, self.l-1, 1)
-        self.modify(0, 0, 1)
-        self.modify(middle, middle, 1)
-        self.modify(middle-1, middle-1, .8)
+        self.modify(self.l-1, self.l-1, 2)
+        self.modify(0, 0, 2)
+        self.modify(middle, middle, 2)
+        self.modify(middle-1, middle-1, 2)
 
         self.plot()
         self.time_step_ind()
@@ -104,7 +124,7 @@ class grid:
     ##### A running routine, if the time_step algorithm returns 0, then the lattice has no possible spillings any more
     def run(self, N):
         for k in range(N):
-            wert    = self.time_step_hex()
+            wert    = self.time_step_ind()
 
             if wert == 0:
                 return
@@ -122,7 +142,7 @@ class grid:
         neighboors  = np.mod(candidates.reshape((candidates.shape[0], 1, candidates.shape[1]) ) + steps, self.l )
         neighboors  = np.transpose(neighboors, (1, 2, 0))
         for el in neighboors:
-            self.o[el[0], el[1]]    += fillings/len(steps)                       # This is necessary to get overspillings in the same cell right
+            self.o[el[0], el[1]]    += fillings/len(steps)              # This is necessary to get overspillings in the same cell right
         self.var.append(np.var(self.o) )
         self.time   += 1
         return 1

@@ -4,29 +4,23 @@ import time
 
 def main():
     N       = 100
-    n       = 500
-    mu      = 0.4
-    lattice = grid(mu, N, N)
+    n       = 100
+    mu      = 0.7
 
+    lattice = grid(mu, N, N)
+    #lattice.test_run()
     lattice.fill_random()
     lattice.run(n)
-    lattice.save()
-    lattice.load()
     lattice.plot()
-    
+    lattice.fill_random()
+    lattice.animation(n)
 
-#    for crit in np.arange(0.19, 0.21, .001):
-#        print(crit)
-#        lattice = grid(crit, N, N)
+#    for mu in np.arange(4., 5.0001, .01):
+#        print(mu)
+#        lattice = grid(mu, N, N)
 #        lattice.fill_random()
-#        start   = time.perf_counter()
-#        #lattice.load()
 #        lattice.run(n)
-#        #lattice.plot()
-#        print(time.perf_counter() - start)
-#        print()
 #        lattice.save()
-
-
+ 
 if __name__ == "__main__":
     main()
