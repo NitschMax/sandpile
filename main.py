@@ -5,7 +5,7 @@ import time
 def main():
     N       = 200
     n       = 1000
-    mu      = 0.7
+    mu      = 0.70
     geom    = "hex"
 
     lattice = grid(mu, N, N, geom)
