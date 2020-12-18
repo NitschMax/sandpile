@@ -9,8 +9,7 @@ from matplotlib.animation import FuncAnimation
 class grid:
     ##### Let the lattice introduce itself
     def greet(self):
-        print("Hello World, I am a grid of heigth " + str(self.h) + " and length " + str(self.l) + "!" )
-        print(self.o)
+        print("Hello World, I am a grid of heigth {} and length {}! My average filling is {:1.4f} and I have a {} geometry.".format(self.h, self.l, self.mu, self.geom)  )
 
     ##### Several interesting starting configurations
     def fill_random(self):
@@ -48,7 +47,7 @@ class grid:
             os.mkdir(directory)
         os.chdir(directory)
 
-        return ['lattice_data/', str(self.geom + '_Nk1-{}_Nk2-{}/').format(self.h,self.l), str('mu{:0.4f}/').format(self.mu) ]
+        return ['lattice_data/', self.geom + '_Nk1-{}_Nk2-{}/'.format(self.h,self.l), 'mu{:0.4f}/'.format(self.mu) ]
 
     ##### Load an already calculated lattice with its lattest occupation and variancies
     def load(self):
@@ -103,7 +102,12 @@ class grid:
             #temp.set_color(colors(i))
 
         ani = FuncAnimation(fig=fig, func=animate, frames=n, interval=100, repeat=True)
-        ani.save('animation.mp4')
+        directory   = "".join(self.data_directory() )
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        ani.save(directory + 'animation.mp4')
         #plt.show()
 
     ##### A routine to check for a simple test of one time_step
