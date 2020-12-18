@@ -44,16 +44,15 @@ class grid:
     def data_directory(self):
         directory   = data_dir.get_dir()
 
-        directory   += str('Nk1-{}_Nk2-{}/').format(self.h,self.l)
         if not os.path.exists(directory):
             os.mkdir(directory)
         os.chdir(directory)
-        
-        return str('mu{:0.4f}/').format(self.mu)
+
+        return ['lattice_data/', str(self.geom + '_Nk1-{}_Nk2-{}/').format(self.h,self.l), str('mu{:0.4f}/').format(self.mu) ]
 
     ##### Load an already calculated lattice with its lattest occupation and variancies
     def load(self):
-        directory   = self.data_directory()
+        directory   = "".join(self.data_directory() )
 
         if not os.path.exists(directory):
             print("There is no data available for this lattice configuration.")
@@ -66,10 +65,10 @@ class grid:
 
     ##### Save the lattice and its variancies
     def save(self):
-        directory   = self.data_directory()
+        directory   = "".join(self.data_directory() )
 
         if not os.path.exists(directory):
-            os.mkdir(directory)
+            os.makedirs(directory)
 
         name        = "occupation.npy"
         np.save(directory + name, self.o)
@@ -124,7 +123,14 @@ class grid:
     ##### A running routine, if the time_step algorithm returns 0, then the lattice has no possible spillings any more
     def run(self, N):
         for k in range(N):
-            wert    = self.time_step_ind()
+            if self.geom == "quad":
+                wert    = self.time_step_ind()
+            elif self.geom == "hex":
+                wert    = self.time_step_hex()
+            else:
+                print("Something went running with the geometry of the lattice")
+                break
+
 
             if wert == 0:
                 return
@@ -211,13 +217,18 @@ class grid:
         self.time   += 1
         return 1
 
-    def __init__(self, mu, heigth, length):
+    def __init__(self, mu, heigth, length, geom="quad"):
         self.h      = heigth                        #heigth of the grid
         self.l      = length                        #length of the grid
         self.a      = self.h*self.l                 #area of the grid
         self.mu     = mu                            #average filling of the grid
         self.time   = 0                             #current time step of the grid
         self.var    = []                            #variance of the grid
+        if geom in ["quad", "hex"]:
+            self.geom   = geom                          #Geometry of the lattice
+        else:
+            print('Choosen geometry does not exist. Quadratic geometric choosen as defaultl')
+            self.geom   = "quad"
         self.o      = np.zeros((self.h, self.l) )   #occupations, to get non-zero ocupations use the fill_* fuctions
 
     
